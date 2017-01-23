@@ -2,7 +2,8 @@
 
 var types = {
   ADD_REQUEST: 'ADD_REQUEST',
-  CLOSE_REQUEST: 'CLOSE_REQUEST'
+  CLOSE_REQUEST: 'CLOSE_REQUEST',
+  FILTER_REQUEST: 'FILTER_REQUEST'
 }
 
 var addRequestAction = function(title, author, date){
@@ -25,19 +26,30 @@ var closeRequestAction = function(id){
     }
 }
 
+var filterAction = function(filter){
+    return { 
+        type: types.FILTER_REQUEST,
+        info: {
+            filter: filter
+        }
+    }
+}
+
 var ActionCreators = Object.assign({}, {
     addRequest: addRequestAction,
-    closeRequest: closeRequestAction
+    closeRequest: closeRequestAction,
+    filter: filterAction
 })
 
 //----------------- Reducers --------------------
-var initialState = {
-    requests: Immutable.List([])
-}
-
 var stage = {
     start: 0,
     end: 1
+}
+
+var initialState = {
+    requests: Immutable.List([]),
+    stage: Immutable.Map({stage: stage.start})
 }
 
 var addRequestReducer = function(state = Immutable.List([]), action){
@@ -48,21 +60,43 @@ var addRequestReducer = function(state = Immutable.List([]), action){
             var index = state.findIndex(function(element) {
                 return element.get('id') === action.info.id
             })
-            console.log(index)
             return state.setIn([index, 'stage'], stage.end)
     }
     return state
 }
 
+var filterReducer = function(state = Immutable.Map({stage: stage.start}), action){
+    switch(action.type){
+        case types.FILTER_REQUEST:
+            return state.merge(action.info.filter)
+    }
+    return state
+}
+
+
 var rootReducer = Redux.combineReducers({
-    requests: addRequestReducer
+    requests: addRequestReducer,
+    filter: filterReducer
 })
 
 //----------------- Coponents --------------------
+var displayFilter = function(requests, filters){
+    return requests.filter(function(request) {
+        return Object.keys(filters).every(function(property) {
+            if(!filters[property])
+                return true
+            return request[property] === filters[property]
+        })
+  })
+}
+
+
 var mapstateToProps = function(state) {
-  return { 
-      requests: state.requests.toJS()
-  }
+    var filters = state.filter.toJS()
+    return { 
+        requests: displayFilter(state.requests.toJS(),filters),
+        visibleStage: filters.stage
+    }
 }
 
 var mapDispatchToProps = function (dispatch){
@@ -84,19 +118,29 @@ var requestDef = function(props, request){
 var appDef = React.createClass({
   render: function () {
     var requestList = []
+    var addForm = undefined
     var that = this
     this.props.requests.forEach(function(request){
-        requestList.push(requestDef(that.props, request))
+            requestList.push(requestDef(that.props, request))
     })
+    if(this.props.visibleStage == stage.start)
+        addForm = React.createElement('div', { },
+            React.createElement( 'form', {},
+            React.createElement( 'Label', { }, 'Title'),
+            React.createElement( 'input', { id: 'title' }),
+            React.createElement( 'Label', { }, 'Author'),
+            React.createElement( 'input', { id: 'author' })),
+            React.createElement( 'button', { onClick: function() { that.props.addRequest(this.title.value, this.author.value, new Date()) } }, 'Add Request')
+        )
     return React.createElement('div',
-    {},
-    React.createElement( 'form', {},
-    React.createElement( 'Label', { }, 'Title'),
-    React.createElement( 'input', { id: 'title' }),
-    React.createElement( 'Label', { }, 'Author'),
-    React.createElement( 'input', { id: 'author' })),
-    React.createElement( 'button', { onClick: function() { that.props.addRequest(this.title.value, this.author.value, new Date()) } }, 'Add Request'),
-    requestList
+        {},
+        React.createElement( 'Select', 
+            { id: 'stageVisible', onChange: function(){ that.props.filter({stage: this.stageVisible.selectedIndex}) }}, 
+            React.createElement('option', {},'start'),
+            React.createElement('option', {},'end')
+        ),
+        addForm,
+        requestList
     )
   }
 })
