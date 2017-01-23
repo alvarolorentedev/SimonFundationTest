@@ -3,13 +3,26 @@
 var types = {
   ADD_REQUEST: 'ADD_REQUEST',
   CLOSE_REQUEST: 'CLOSE_REQUEST',
-  FILTER_REQUEST: 'FILTER_REQUEST'
+  MODIFY_REQUEST: 'MODIFY_REQUEST',
+  FILTER_REQUEST: 'FILTER_REQUEST',
 }
 
 var addRequestAction = function(title, author, date){
     return { 
         type: types.ADD_REQUEST,
         info: {
+            title: title,
+            author: author,
+            date: date
+        }
+    }
+}
+
+var modifyRequestAction = function(id,title, author, date){
+    return { 
+        type: types.MODIFY_REQUEST,
+        info: {
+            id: id,
             title: title,
             author: author,
             date: date
@@ -38,6 +51,7 @@ var filterAction = function(filter){
 var ActionCreators = Object.assign({}, {
     addRequest: addRequestAction,
     closeRequest: closeRequestAction,
+    saveRequest: modifyRequestAction,
     filter: filterAction
 })
 
@@ -61,6 +75,11 @@ var addRequestReducer = function(state = Immutable.List([]), action){
                 return element.get('id') === action.info.id
             })
             return state.setIn([index, 'stage'], stage.end)
+        case types.MODIFY_REQUEST:
+            var index = state.findIndex(function(element) {
+                return element.get('id') === action.info.id
+            })
+            return state.setIn([index, 'title'], action.info.title).setIn([index, 'author'], action.info.author).setIn([index, 'date'], action.info.date)
     }
     return state
 }
@@ -83,9 +102,11 @@ var rootReducer = Redux.combineReducers({
 var displayFilter = function(requests, filters){
     return requests.filter(function(request) {
         return Object.keys(filters).every(function(property) {
-            if(!filters[property])
+            console.log(property + ' ' + filters[property])
+            if(filters[property] === '')
                 return true
             return request[property] === filters[property]
+            
         })
   })
 }
@@ -110,8 +131,15 @@ var requestDef = function(props, request){
     return React.createElement(
         'div',
         {},
-        React.createElement('p', {},'request: ' + request.title + ' ' + request.author + ' ' + request.date),
-        button
+            React.createElement( 'form', {},
+            React.createElement( 'Label', { }, 'Title'),
+            React.createElement( 'input', { key: request.id+'title', id: request.id+'title', defaultValue: request.title}),
+            React.createElement( 'Label', { }, 'Author'),
+            React.createElement( 'input', { key: request.id+'author', id: request.id+'author', defaultValue: request.author }),
+            React.createElement( 'Label', { }, 'Date'),
+            React.createElement( 'input', { key: request.id+'date', id: request.id+'date', defaultValue: request.date })),
+            button,
+            React.createElement( 'button', { onClick: function() { props.saveRequest(request.id, this[request.id+'title'].value, this[request.id+'author'].value, this[request.id+'date'].value ) } }, 'Save')
         )
 }
 
@@ -146,7 +174,7 @@ var appDef = React.createClass({
             React.createElement( 'Label', { }, 'Author'),
             React.createElement( 'input', { id: 'authorFilter' })),
             React.createElement( 'button', { onClick: function() { that.props.filter({title: this.titleFilter.value, author: this.authorFilter.value}) } }, 'Filter Requests'),
-            React.createElement( 'button', { onClick: function() { that.props.filter({title: undefined, author: undefined}) } }, 'Filter Requests')
+            React.createElement( 'button', { onClick: function() { that.props.filter({title: '', author: ''}) } }, 'Clear Filter')
         ),
         addForm,
         requestList
