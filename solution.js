@@ -16,9 +16,12 @@ var addRequestAction = function(title, author, date){
     }
 }
 
-var closeRequestAction = function(title, author, date){
+var closeRequestAction = function(id){
     return { 
-        type: types.CLOSE_REQUEST
+        type: types.CLOSE_REQUEST,
+        info: {
+            id: id
+        }
     }
 }
 
@@ -40,7 +43,13 @@ var stage = {
 var addRequestReducer = function(state = Immutable.List([]), action){
     switch(action.type){
         case types.ADD_REQUEST:
-            return state.push({title: action.info.title, author: action.info.author, date: action.info.date, stage: stage.start})
+            return state.push(Immutable.Map({title: action.info.title, author: action.info.author, date: action.info.date, id: state.size , stage: stage.start}))
+        case types.CLOSE_REQUEST:
+            var index = state.findIndex(function(element) {
+                return element.get('id') === action.info.id
+            })
+            console.log(index)
+            return state.setIn([index, 'stage'], stage.end)
     }
     return state
 }
@@ -60,24 +69,25 @@ var mapDispatchToProps = function (dispatch){
     return Redux.bindActionCreators(ActionCreators, dispatch);
 }
 
-var requestDef = function(request){
+var requestDef = function(props, request){
+    var button = undefined
+    if(request.stage == stage.start)
+        button = React.createElement( 'button', { onClick: function() { props.closeRequest(request.id) } }, 'Close')
     return React.createElement(
         'div',
         {},
         React.createElement('p', {},'request: ' + request.title + ' ' + request.author + ' ' + request.date),
-        React.createElement( 'button', { onClick: function() { that.props.closeRequest() } }, 'Close')
-        
+        button
         )
 }
 
 var appDef = React.createClass({
   render: function () {
     var requestList = []
-    this.props.requests.forEach(function(request){
-        console
-        requestList.push(requestDef(request))
-    })
     var that = this
+    this.props.requests.forEach(function(request){
+        requestList.push(requestDef(that.props, request))
+    })
     return React.createElement('div',
     {},
     React.createElement( 'form', {},
