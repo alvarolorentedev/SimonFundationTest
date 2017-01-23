@@ -1,0 +1,15 @@
+Suppose we have a request object with 3 fields, Title, Author, and Date.
+ 
+Create a web app to track requests through stages. A stage shows all the requests currently in that stage and the details associated with the requests. The requests will move through 2 stages, Start and End.
+ 
+The Start stage will have the ability to add new requests. The Start stage will have a button to move selected requests to the End stage. Both stages will have the ability to add new fields to the requests. Both stages will have the ability to edit a request and its fields. Both stages will have the ability to filter the table by any field. The results of the filter should exactly match the filter criteria. There should be a button to clear the filter.
+ 
+We have the following pre-existing objects:
+{
+    requests: [
+         { title: “Give me money”, author: “Scrooge McDuck”, date: “01/25/2015”},
+         { title: “Give me health”, author: “Doctor Octopus”, date: “11/13/1999”},
+    ]
+}
+ 
+For this challenge, please use React.

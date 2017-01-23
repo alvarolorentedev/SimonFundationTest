@@ -1,0 +1,25 @@
+{
+  "name": "simonstest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node .",
+    "test": "",
+    "dev": "node ./node_modules/nodemon/bin/nodemon.js ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kanekotic/SimonFundationTest.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kanekotic/SimonFundationTest/issues"
+  },
+  "homepage": "https://github.com/kanekotic/SimonFundationTest#readme",
+  "dependencies": {
+    "express": "^4.14.0",
+    "nodemon": "^1.11.0"
+  }
+}
