@@ -139,6 +139,15 @@ var appDef = React.createClass({
             React.createElement('option', {},'start'),
             React.createElement('option', {},'end')
         ),
+        React.createElement('div', { },
+            React.createElement( 'form', {},
+            React.createElement( 'Label', { }, 'Title'),
+            React.createElement( 'input', { id: 'titleFilter' }),
+            React.createElement( 'Label', { }, 'Author'),
+            React.createElement( 'input', { id: 'authorFilter' })),
+            React.createElement( 'button', { onClick: function() { that.props.filter({title: this.titleFilter.value, author: this.authorFilter.value}) } }, 'Filter Requests'),
+            React.createElement( 'button', { onClick: function() { that.props.filter({title: undefined, author: undefined}) } }, 'Filter Requests')
+        ),
         addForm,
         requestList
     )
